@@ -30,6 +30,7 @@ def scrape():
         "pin": PIN,
         "associateAccount": "false"
     }
+    print(str(cook)) # ~debug~
     result = session_requests.post(
         login_url,
         data=payload,

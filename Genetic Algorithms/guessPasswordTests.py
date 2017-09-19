@@ -21,7 +21,7 @@ class GuessPasswordTests(unittest.TestCase):
         password = genetic.geneticalg(target, self.geneset)
         best = password.get_best(startTime)
 
-        self.assertEqual(best.Genes, target)
+        self.assertEqual(''.join(best.Genes), target)
 
 if __name__ == '__main__':
     unittest.main()

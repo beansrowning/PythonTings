@@ -30,9 +30,8 @@ class geneticalg(object):
         while len(self.genes) < self.length:
             sampleSize = min(self.length - len(self.genes), len(self.geneSet))
             self.genes.extend(random.sample(self.geneSet, sampleSize))
-        self.guess = ''.join(self.genes)
         self.fitness = self.get_fitness(self.genes)
-        return Chromosome(self.guess, self.fitness)
+        return Chromosome(self.genes, self.fitness)
 
     def get_fitness(self, guess):
         return sum(1 for expected, actual in zip(self.target, guess)
@@ -40,14 +39,13 @@ class geneticalg(object):
 
     def mutate(self, run):
         self.index = random.randrange(0, len(run.Genes))
-        self.childGenes = list(run.Genes)
+        self.childGenes = run.Genes[:]
         self.newGene, self.alternate = random.sample(self.geneSet, 2)
         self.childGenes[self.index] = self.alternate \
             if self.newGene == self.childGenes[self.index] \
             else self.newGene
-        self.guess = ''.join(self.childGenes)
-        self.fitness = self.get_fitness(self.guess)
-        return Chromosome(self.guess, self.fitness)
+        self.fitness = self.get_fitness(self.childGenes)
+        return Chromosome(self.childGenes, self.fitness)
 
     def get_best(self, startTime):
         random.seed()
@@ -92,7 +90,7 @@ class Benchmark(object):
 
 def display(run, startTime):
     timeDiff = datetime.datetime.now() - startTime
-    print("{0}\t{1}\t{2}".format(run.Genes, run.Fitness, str(timeDiff)))
+    print("{}\t{}\t{}".format(''.join(run.Genes), run.Fitness, str(timeDiff)))
 
 def guess_password(target):
     geneset = " abcdeghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!."

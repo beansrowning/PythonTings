@@ -10,9 +10,15 @@ import statistics
 
 class geneticalg(object):
 
-    self.genes = []
-    self.guess = ''
-    self.fitness = int
+    genes = []
+    fitness = int
+    index = int
+    childGenes = list()
+    guess = ''
+    newGene = ''
+    alternate = ''
+    bestParent = ''
+    child = ''
 
     def __init__(self, target, geneSet):
         self.target = target
@@ -43,14 +49,10 @@ class geneticalg(object):
         self.fitness = self.get_fitness(self.guess)
         return Chromosome(self.guess, self.fitness)
 
-    def display(self, run, startTime):
-        timeDiff = datetime.datetime.now() - startTime
-        print("{0}\t{1}\t{2}".format(run.Genes, run.Fitness, str(timeDiff)))
-
     def get_best(self, startTime):
         random.seed()
         self.bestParent = self.generate_parent()
-        self.display(self.bestParent, startTime)
+        display(self.bestParent, startTime)
 
         if self.bestParent.Fitness >= self.length:
             return self.bestParent
@@ -60,11 +62,10 @@ class geneticalg(object):
 
             if self.bestParent.Fitness >= self.child.Fitness:
                 continue
-            self.display(self.child, startTime)
+            display(self.child, startTime)
             if self.child.Fitness >= len(self.bestParent.Genes):
                 return self.child
             self.bestParent = self.child
-
 
 class Chromosome(object):
 
@@ -89,6 +90,9 @@ class Benchmark(object):
                 statistics.stdev(timings, mean)
                 if i > 1 else 0))
 
+def display(run, startTime):
+    timeDiff = datetime.datetime.now() - startTime
+    print("{0}\t{1}\t{2}".format(run.Genes, run.Fitness, str(timeDiff)))
 
 def guess_password(target):
     geneset = " abcdeghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!."

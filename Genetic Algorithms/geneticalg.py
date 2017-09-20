@@ -3,98 +3,60 @@
 # Password guessing in Python
 
 import random
-import datetime
-import time
 import statistics
+import sys
+import time
 
-
-class geneticalg(object):
-
+def _generate_parent(length, geneSet, get_fitness):
     genes = []
-    fitness = int
-    index = int
-    childGenes = list()
-    guess = ''
-    newGene = ''
-    alternate = ''
-    bestParent = ''
-    child = ''
+    while len(genes) < length:
+        sampleSize = min(length - len(genes), len(geneSet))
+        genes.extend(random.sample(geneSet, sampleSize))
+    fitness = get_fitness(genes)
+    return Chromosome(genes, fitness)
 
-    def __init__(self, target, geneSet):
-        self.target = target
-        self.geneSet = geneSet
-        self.length = len(target)
+def _mutate(parent, geneSet, get_fitness):
+    childGenes = parent.Genes[:]
+    index = random.randrange(0, len(parent.Genes))
+    newGene, alternate = random.sample(geneSet, 2)
+    childGenes[index] = alternate if newGene == childGenes[index] else newGene
+    fitness = get_fitness(childGenes)
+    return Chromosome(childGenes, fitness)
 
+def get_best(get_fitness, targetLen, optimalFitness, geneSet, display):
+    random.seed()
+    bestParent = _generate_parent(targetLen, geneSet, get_fitness)
+    display(bestParent)
+    if bestParent.Fitness >= optimalFitness:
+        return bestParent
+    while True:
+        child = _mutate(bestParent, geneSet, get_fitness)
+        if bestParent.Fitness >= child.Fitness:
+            continue
+        display(child)
+        if child.Fitness >= optimalFitness:
+            return child
+        bestParent = child
 
-    def generate_parent(self):
-        while len(self.genes) < self.length:
-            sampleSize = min(self.length - len(self.genes), len(self.geneSet))
-            self.genes.extend(random.sample(self.geneSet, sampleSize))
-        self.fitness = self.get_fitness(self.genes)
-        return Chromosome(self.genes, self.fitness)
-
-    def get_fitness(self, guess):
-        return sum(1 for expected, actual in zip(self.target, guess)
-                   if expected == actual)
-
-    def mutate(self, run):
-        self.index = random.randrange(0, len(run.Genes))
-        self.childGenes = run.Genes[:]
-        self.newGene, self.alternate = random.sample(self.geneSet, 2)
-        self.childGenes[self.index] = self.alternate \
-            if self.newGene == self.childGenes[self.index] \
-            else self.newGene
-        self.fitness = self.get_fitness(self.childGenes)
-        return Chromosome(self.childGenes, self.fitness)
-
-    def get_best(self, startTime):
-        random.seed()
-        self.bestParent = self.generate_parent()
-        display(self.bestParent, startTime)
-
-        if self.bestParent.Fitness >= self.length:
-            return self.bestParent
-
-        while True:
-            self.child = self.mutate(self.bestParent)
-
-            if self.bestParent.Fitness >= self.child.Fitness:
-                continue
-            display(self.child, startTime)
-            if self.child.Fitness >= len(self.bestParent.Genes):
-                return self.child
-            self.bestParent = self.child
-
-class Chromosome(object):
-
+class Chromosome:
     def __init__(self, genes, fitness):
         self.Genes = genes
         self.Fitness = fitness
 
-
-class Benchmark(object):
-
+class Benchmark:
     @staticmethod
     def run(function):
         timings = []
+        stdout = sys.stdout
         for i in range(100):
+            sys.stdout = None
             startTime = time.time()
             function()
             seconds = time.time() - startTime
+            sys.stdout = stdout
             timings.append(seconds)
             mean = statistics.mean(timings)
-            print("{0} {1:3.2f} {2:3.2f}".format(
-                1 + i, mean,
-                statistics.stdev(timings, mean)
-                if i > 1 else 0))
-
-def display(run, startTime):
-    timeDiff = datetime.datetime.now() - startTime
-    print("{}\t{}\t{}".format(''.join(run.Genes), run.Fitness, str(timeDiff)))
-
-def guess_password(target):
-    geneset = " abcdeghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!."
-    startTime = datetime.datetime.now()
-    password = geneticalg(target, geneset)
-
-    password.get_best(startTime)
+            if i < 10 or i % 10 == 9:
+                print("{} {:3.2f} {:3.2f}".format(
+                    1 + i, mean,
+                    statistics.stdev(timings, mean) if i > 1 else 0))

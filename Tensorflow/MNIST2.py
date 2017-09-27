@@ -76,6 +76,13 @@ with tf.Session() as sess:
                 x: batch[0], y_: batch[1], keep_prob: 1.0})
             print('Step %d, Training Accuracy %g' % (i, train_accuracy))
         train_step.run(feed_dict = {x: batch[0], y_: batch[1], keep_prob: 0.5})
-
-    print('Test Accuracy %g' % accuracy.eval(feed_dict = {
-        x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
+    # BUG : Out-of-memory issues if all images passed at once
+    n_batches = mnist.test.images.shape[0] // 50
+    cumulative_accuracy = 0.0
+    for index in range(n_batches):
+        batch = mnist.test.next_batch(50)
+        cumulative_accuracy += accuracy.eval(feed_dict = {
+            x: batch[0], y_: batch[1], keep_prob: 1.0})
+    print('Test Accuracy {}'.format(cumulative_accuracy / n_batches))
+    # print('Test Accuracy %g' % accuracy.eval(feed_dict = {
+    #     x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
